@@ -1,6 +1,7 @@
 module Blackjack exposing
   ( Hand, Card, CardType (..), CardSuit (..)
   , newHand, newCard, addCardToHand
+  , suitOfCard, typeOfCard
   , isSplittable, isBust, hasAce
   , isBlackjack, isTwentyOne
   , isHandBetterThan, isHandTiedWith
@@ -15,7 +16,7 @@ and calculate the best score for a given set of cards.
 @docs Hand, Card, CardType, CardSuit
 
 # Construction
-@docs newHand, newCard, addCardToHand
+@docs newHand, newCard, addCardToHand, suitOfCard, typeOfCard
 
 # Utility Functions
 @docs isSplittable, isBust, hasAce, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore
@@ -76,6 +77,20 @@ cards is irrelavent.
 addCardToHand : Card -> Hand -> Hand
 addCardToHand card (BjHand hand) =
   BjHand (card :: hand)
+
+
+{-| Returns the suit of a given card.
+-}
+suitOfCard : Card -> CardSuit
+suitOfCard (BjCard c) =
+  c.suit
+
+
+{-| Returns the type of a given card.
+-}
+typeOfCard : Card -> CardType
+typeOfCard (BjCard c) =
+  c.type'
 
 
 {-| Test if a hand is splittable. A hand
