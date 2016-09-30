@@ -1,5 +1,5 @@
 {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "summary": "Library for comparing and testing hands of Blackjack.",
     "repository": "https://github.com/thaterikperson/elm-blackjack.git",
     "license": "MIT",
@@ -10,7 +10,6 @@
         "Blackjack"
     ],
     "dependencies": {
-        "elm-community/elm-test": "1.1.0 <= v < 2.0.0",
         "elm-lang/core": "4.0.1 <= v < 5.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0"

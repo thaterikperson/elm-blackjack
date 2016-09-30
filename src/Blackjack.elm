@@ -8,6 +8,7 @@ module Blackjack exposing
   , bestScore
   )
 
+
 {-| This library provides a few utility functions
 for a Blackjack application. It can compare hands
 and calculate the best score for a given set of cards.
@@ -22,6 +23,7 @@ and calculate the best score for a given set of cards.
 @docs isSplittable, isBust, hasAce, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore
 
 -}
+
 
 {-| Represents a hand in Blackjack. Can be
 an arbitrary number of cards.

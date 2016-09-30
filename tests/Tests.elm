@@ -1,10 +1,12 @@
 module Tests exposing (..)
 
 import Blackjack exposing (..)
-import ElmTest exposing (..)
+import Expect
+import Test exposing (Test, describe, test)
 import Json.Decode as JD exposing ((:=))
 import Json.Encode as JE
 import String
+import Test.Runner.Html
 
 aceSpades = newCard Ace Spades
 nineDiamonds = newCard Nine Diamonds
@@ -29,49 +31,49 @@ tHqCfHaD = tHqCfH |> addCardToHand aceDiamonds
 
 splitTests : Test
 splitTests =
-  suite "isSplittable"
-    [ test "Two different cards" (assert <| not <| isSplittable aS9D)
-    , test "Different cards, same suit" (assert <| not <| isSplittable aS9S)
-    , test "Same cards" (assert <| isSplittable aSaD)
-    , test "Two face cards" (assert <| isSplittable tHqC)
+  describe "isSplittable"
+    [ test "Two different cards" <| \() -> isSplittable aS9D |> Expect.equal False
+    , test "Different cards, same suit" <| \() -> isSplittable aS9S |> Expect.equal False
+    , test "Same cards" <| \() -> isSplittable aSaD |> Expect.equal True
+    , test "Two face cards" <| \() -> isSplittable tHqC |> Expect.equal True
     ]
 
 
 hasAceTests : Test
 hasAceTests =
-  suite "hasAce"
-    [ test "Two cards, one ace" (assert <| hasAce aS9D)
-    , test "No ace" (assert <| not <| hasAce tHqC)
-    , test "Two aces" (assert <| hasAce aSaD)
-    , test "One ace, four cards" (assert <| hasAce tDfCfHaS)
+  describe "hasAce"
+    [ test "Two cards, one ace" <| \() -> hasAce aS9D |> Expect.equal True
+    , test "No ace" <| \() -> hasAce tHqC |> Expect.equal False
+    , test "Two aces" <| \() -> hasAce aSaD |> Expect.equal True
+    , test "One ace, four cards" <| \() -> hasAce tDfCfHaS |> Expect.equal True
     ]
 
 
 isBlackjackTests : Test
 isBlackjackTests =
-  suite "isBlackjack"
-    [ test "Two aces" (assert <| not <| isBlackjack aSaD)
-    , test "No aces" (assert <| not <| isBlackjack tHqC)
-    , test "Ace and face card" (assert <| isBlackjack aStH)
-    , test "Ace and under card" (assert <| not <| isBlackjack aS9D)
+  describe "isBlackjack"
+    [ test "Two aces" <| \() -> isBlackjack aSaD |> Expect.equal False
+    , test "No aces" <| \() -> isBlackjack tHqC |> Expect.equal False
+    , test "Ace and face card" <| \() -> isBlackjack aStH |> Expect.equal True
+    , test "Ace and under card" <| \() -> isBlackjack aS9D |> Expect.equal False
     ]
 
 
 bestScoreTests : Test
 bestScoreTests =
-  suite "bestScore"
-    [ test "Ace and nine" (assertEqual (bestScore aS9D) 20)
-    , test "Ace and ace" (assertEqual (bestScore aSaD) 12)
-    , test "Two, four, four, and ace" (assertEqual (bestScore tDfCfHaS) 21)
-    , test "Ten and queen" (assertEqual (bestScore tHqC) 20)
-    , test "Bust w/o ace" (assertEqual (bestScore tHqCfH) 0)
-    , test "Bust with ace" (assertEqual (bestScore tHqCfHaD) 0)
+  describe "bestScore"
+    [ test "Ace and nine" <| \() -> bestScore aS9D |> Expect.equal 20
+    , test "Ace and ace" <| \() -> bestScore aSaD |> Expect.equal 12
+    , test "Two, four, four, and ace" <| \() -> bestScore tDfCfHaS |> Expect.equal 21
+    , test "Ten and queen" <| \() -> bestScore tHqC |> Expect.equal 20
+    , test "Bust w/o ace" <| \() -> bestScore tHqCfH |> Expect.equal 0
+    , test "Bust with ace" <| \() -> bestScore tHqCfHaD |> Expect.equal 0
     ]
 
 
 all : Test
 all =
-  suite "All tests"
+  describe "Blackjack Module"
     [ splitTests
     , hasAceTests
     , isBlackjackTests
@@ -79,5 +81,6 @@ all =
     ]
 
 
+main : Program Never
 main =
-  runSuiteHtml all
+  Test.Runner.Html.run all
