@@ -1,13 +1,29 @@
-module Blackjack exposing
-  ( Hand, Card, CardType (..), CardSuit (..)
-  , newHand, newCard, addCardToHand
-  , suitOfCard, typeOfCard
-  , isSplittable, isBust, hasAce
-  , isBlackjack, isTwentyOne
-  , isHandBetterThan, isHandTiedWith
-  , bestScore
-  )
-
+module Blackjack
+    exposing
+        ( Hand(..)
+        , Card(..)
+        , CardType(..)
+        , CardSuit(..)
+        , newHand
+        , newCard
+        , addCardToHand
+        , addCardsToHand
+        , suitOfCard
+        , typeOfCard
+        , isSplittable
+        , isBust
+        , hasAce
+        , isBlackjack
+        , isTwentyOne
+        , isHandBetterThan
+        , isHandTiedWith
+        , bestScore
+        , deserializeCard
+        , serializeType
+        , serializeSuit
+        , deserializeType
+        , deserializeSuit
+        )
 
 {-| This library provides a few utility functions
 for a Blackjack application. It can compare hands
@@ -17,10 +33,13 @@ and calculate the best score for a given set of cards.
 @docs Hand, Card, CardType, CardSuit
 
 # Construction
-@docs newHand, newCard, addCardToHand, suitOfCard, typeOfCard
+@docs newHand, newCard, addCardToHand, addCardsToHand, suitOfCard, typeOfCard
 
 # Utility Functions
 @docs isSplittable, isBust, hasAce, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore
+
+# Serialization
+@docs deserializeSuit, deserializeType, deserializeCard, serializeSuit, serializeType
 
 -}
 
@@ -28,34 +47,39 @@ and calculate the best score for a given set of cards.
 {-| Represents a hand in Blackjack. Can be
 an arbitrary number of cards.
 -}
-type Hand = BjHand (List Card)
+type Hand
+    = BjHand (List Card)
+
 
 {-| Represents a standard playing card.
 -}
-type Card = BjCard { type': CardType, suit: CardSuit }
+type Card
+    = BjCard { type_ : CardType, suit : CardSuit }
 
-{-|-}
+
+{-| -}
 type CardType
-  = Ace
-  | King
-  | Queen
-  | Jack
-  | Ten
-  | Nine
-  | Eight
-  | Seven
-  | Six
-  | Five
-  | Four
-  | Three
-  | Two
+    = Ace
+    | King
+    | Queen
+    | Jack
+    | Ten
+    | Nine
+    | Eight
+    | Seven
+    | Six
+    | Five
+    | Four
+    | Three
+    | Two
 
-{-|-}
+
+{-| -}
 type CardSuit
-  = Clubs
-  | Diamonds
-  | Hearts
-  | Spades
+    = Clubs
+    | Diamonds
+    | Hearts
+    | Spades
 
 
 {-| Construct an empty hand. Can be
@@ -63,14 +87,14 @@ either a player's or dealer's hand.
 -}
 newHand : Hand
 newHand =
-  BjHand []
+    BjHand []
 
 
 {-| Construct a card given the type and suit.
 -}
 newCard : CardType -> CardSuit -> Card
-newCard type' suit =
-  BjCard { type' = type', suit = suit }
+newCard type_ suit =
+    BjCard { type_ = type_, suit = suit }
 
 
 {-| Add a card to an existing hand. Order of
@@ -78,21 +102,29 @@ cards is irrelavent.
 -}
 addCardToHand : Card -> Hand -> Hand
 addCardToHand card (BjHand hand) =
-  BjHand (card :: hand)
+    BjHand (card :: hand)
+
+
+{-| Add cards to an existing hand. Order of
+cards is irrelavent.
+-}
+addCardsToHand : List Card -> Hand -> Hand
+addCardsToHand cards (BjHand hand) =
+    BjHand (cards ++ hand)
 
 
 {-| Returns the suit of a given card.
 -}
 suitOfCard : Card -> CardSuit
 suitOfCard (BjCard c) =
-  c.suit
+    c.suit
 
 
 {-| Returns the type of a given card.
 -}
 typeOfCard : Card -> CardType
 typeOfCard (BjCard c) =
-  c.type'
+    c.type_
 
 
 {-| Test if a hand is splittable. A hand
@@ -107,10 +139,12 @@ both of the same value.
 -}
 isSplittable : Hand -> Bool
 isSplittable (BjHand hand) =
-  case hand of
-    [BjCard c1 as card1, BjCard c2 as card2] ->
-      c1.type' == c2.type' || (isVirtualTen card1 && isVirtualTen card2)
-    _ -> False
+    case hand of
+        [ (BjCard c1) as card1, (BjCard c2) as card2 ] ->
+            c1.type_ == c2.type_ || (isVirtualTen card1 && isVirtualTen card2)
+
+        _ ->
+            False
 
 
 {-| Test if a hand is busted. A hand
@@ -130,7 +164,7 @@ greater than 21.
 -}
 isBust : Hand -> Bool
 isBust hand =
-  (bestScore hand) == 0
+    (bestScore hand) == 0
 
 
 {-| Test if one of the cards in the hand
@@ -145,7 +179,7 @@ the user to double-down.
 -}
 hasAce : Hand -> Bool
 hasAce (BjHand hand) =
-  List.any (\(BjCard card) -> card.type' == Ace) hand
+    List.any (\(BjCard card) -> card.type_ == Ace) hand
 
 
 {-| Test if a hand is a Blackjack.
@@ -164,13 +198,20 @@ one Ace and one face card or 10.
 -}
 isBlackjack : Hand -> Bool
 isBlackjack (BjHand hand) =
-  case hand of
-    [BjCard c1 as card1, BjCard c2 as card2] ->
-      case (c1.type', c2.type') of
-        (Ace, _) -> isVirtualTen card2
-        (_, Ace) -> isVirtualTen card1
-        _ -> False
-    _ -> False
+    case hand of
+        [ (BjCard c1) as card1, (BjCard c2) as card2 ] ->
+            case ( c1.type_, c2.type_ ) of
+                ( Ace, _ ) ->
+                    isVirtualTen card2
+
+                ( _, Ace ) ->
+                    isVirtualTen card1
+
+                _ ->
+                    False
+
+        _ ->
+            False
 
 
 {-| Test if a hand's value is 21. This
@@ -194,7 +235,7 @@ well as non-Blackjack hands.
 -}
 isTwentyOne : Hand -> Bool
 isTwentyOne hand =
-  (bestScore hand) == 21
+    (bestScore hand) == 21
 
 
 {-| Test if one hand has a better score than
@@ -214,7 +255,7 @@ is the best hand.
 -}
 isHandBetterThan : Hand -> Hand -> Bool
 isHandBetterThan hand1 hand2 =
-  (bestScore hand1) > (bestScore hand2)
+    (bestScore hand1) > (bestScore hand2)
 
 
 {-| Test if one hand has the same score as
@@ -233,7 +274,7 @@ hand against a dealer's.
 -}
 isHandTiedWith : Hand -> Hand -> Bool
 isHandTiedWith hand1 hand2 =
-  (bestScore hand1) == (bestScore hand2)
+    (bestScore hand1) == (bestScore hand2)
 
 
 {-| Returns the highest score a hand can have.
@@ -253,50 +294,234 @@ is returned.
 -}
 bestScore : Hand -> Int
 bestScore hand =
-  let
-    goodScores = potentialScores hand |> List.filter (\c ->  c <= 21)
-  in
-    Maybe.withDefault 0 (List.head goodScores)
+    let
+        goodScores =
+            potentialScores hand |> List.filter (\c -> c <= 21)
+    in
+        Maybe.withDefault 0 (List.head goodScores)
+
 
 
 -- Private Functions
 
+
 potentialScores : Hand -> List Int
 potentialScores (BjHand hand) =
-  let
-    (aces, noAces) = List.partition (\(BjCard c) -> c.type' == Ace) hand
-    preAcesSum = List.sum <| List.map cardValue noAces
-    func (BjCard card) scores =
-      let
-        plus1 = List.map (\s -> s + 1) scores
-        plus11 = List.map (\s -> s + 11) scores
-      in
-        plus11 ++ plus1
-    afterAces = List.foldl func [preAcesSum] aces
-  in
-    List.sortWith (\a b -> compare b a) afterAces
+    let
+        ( aces, noAces ) =
+            List.partition (\(BjCard c) -> c.type_ == Ace) hand
+
+        preAcesSum =
+            List.sum <| List.map cardValue noAces
+
+        func (BjCard card) scores =
+            let
+                plus1 =
+                    List.map (\s -> s + 1) scores
+
+                plus11 =
+                    List.map (\s -> s + 11) scores
+            in
+                plus11 ++ plus1
+
+        afterAces =
+            List.foldl func [ preAcesSum ] aces
+    in
+        List.sortWith (\a b -> compare b a) afterAces
 
 
 isVirtualTen : Card -> Bool
-isVirtualTen card =
-  case cardValue card of
-    10 -> True
-    _ -> False
+isVirtualTen (BjCard card) =
+    case card.type_ of
+        King ->
+            True
+
+        Queen ->
+            True
+
+        Ten ->
+            True
+
+        Jack ->
+            True
+
+        _ ->
+            False
 
 
 cardValue : Card -> Int
 cardValue (BjCard card) =
-  case card.type' of
-    King -> 10
-    Queen -> 10
-    Jack -> 10
-    Ten -> 10
-    Nine -> 9
-    Eight -> 8
-    Seven -> 7
-    Six -> 6
-    Five -> 5
-    Four -> 4
-    Three -> 3
-    Two -> 2
-    _ -> 0
+    case card.type_ of
+        King ->
+            10
+
+        Queen ->
+            10
+
+        Jack ->
+            10
+
+        Ten ->
+            10
+
+        Nine ->
+            9
+
+        Eight ->
+            8
+
+        Seven ->
+            7
+
+        Six ->
+            6
+
+        Five ->
+            5
+
+        Four ->
+            4
+
+        Three ->
+            3
+
+        Two ->
+            2
+
+        _ ->
+            0
+
+
+{-| Convert to Ints to a Card
+-}
+deserializeCard : Int -> Int -> Card
+deserializeCard type_ suit =
+    BjCard
+        { type_ = deserializeType type_
+        , suit = deserializeSuit suit
+        }
+
+
+{-| Convert an Int to a CardSuit
+-}
+deserializeSuit : Int -> CardSuit
+deserializeSuit suit =
+    case suit of
+        0 ->
+            Clubs
+
+        1 ->
+            Diamonds
+
+        2 ->
+            Hearts
+
+        _ ->
+            Spades
+
+
+{-| Convert an Int to a CardType
+-}
+deserializeType : Int -> CardType
+deserializeType type_ =
+    case type_ of
+        0 ->
+            Two
+
+        1 ->
+            Three
+
+        2 ->
+            Four
+
+        3 ->
+            Five
+
+        4 ->
+            Six
+
+        5 ->
+            Seven
+
+        6 ->
+            Eight
+
+        7 ->
+            Nine
+
+        8 ->
+            Ten
+
+        9 ->
+            Jack
+
+        10 ->
+            Queen
+
+        11 ->
+            King
+
+        _ ->
+            Ace
+
+{-| Convert CardSuit to an Int
+-}
+serializeSuit : CardSuit -> Int
+serializeSuit suit =
+    case suit of
+        Clubs ->
+            0
+
+        Diamonds ->
+            1
+
+        Hearts ->
+            2
+
+        Spades ->
+            3
+
+
+{-| Convert CardType to an Int
+-}
+serializeType : CardType -> Int
+serializeType type_ =
+    case type_ of
+        Two ->
+            0
+
+        Three ->
+            1
+
+        Four ->
+            2
+
+        Five ->
+            3
+
+        Six ->
+            4
+
+        Seven ->
+            5
+
+        Eight ->
+            6
+
+        Nine ->
+            7
+
+        Ten ->
+            8
+
+        Jack ->
+            9
+
+        Queen ->
+            10
+
+        King ->
+            11
+
+        Ace ->
+            12
