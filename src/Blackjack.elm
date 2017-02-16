@@ -38,7 +38,7 @@ and calculate the best score for a given set of cards.
 @docs newHand, newCard, addCardToHand, addCardsToHand, suitOfCard, typeOfCard
 
 # Utility Functions
-@docs isSplittable, isBust, hasAce, isSoft, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore. cardValue
+@docs isSplittable, isBust, hasAce, isSoft, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore, cardValue
 
 # Serialization
 @docs deserializeSuit, deserializeType, deserializeCard, serializeSuit, serializeType
