@@ -26,6 +26,10 @@ aceDiamonds =
     newCard Ace Diamonds
 
 
+sixDiamonds =
+    newCard Six Diamonds
+
+
 tenHearts =
     newCard Ten Hearts
 
@@ -44,6 +48,10 @@ aS9S =
 
 aSaD =
     newHand |> addCardToHand aceSpades |> addCardToHand aceDiamonds
+
+
+aSsD =
+    newHand |> addCardToHand aceSpades |> addCardToHand sixDiamonds
 
 
 aStH =
@@ -112,6 +120,17 @@ hasAceTests =
         , test "No ace" <| \() -> hasAce tHqC |> Expect.equal False
         , test "Two aces" <| \() -> hasAce aSaD |> Expect.equal True
         , test "One ace, four cards" <| \() -> hasAce tDfCfHaS |> Expect.equal True
+        ]
+
+
+isSoftTests : Test
+isSoftTests =
+    describe "isSoft"
+        [ test "Ace and six" <| \() -> hasAce aSsD |> Expect.equal True
+        , test "Two aces and six" <| \() -> hasAce (addCardToHand aceDiamonds aSsD) |> Expect.equal True
+        , test "Two aces" <| \() -> hasAce aSaD |> Expect.equal True
+        , test "One ace, four small cards" <| \() -> hasAce tDfCfHaS |> Expect.equal True
+        , test "One ace, three big cards" <| \() -> hasAce tHqCfHaD |> Expect.equal False
         ]
 
 

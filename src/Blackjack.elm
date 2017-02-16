@@ -13,11 +13,13 @@ module Blackjack
         , isSplittable
         , isBust
         , hasAce
+        , isSoft
         , isBlackjack
         , isTwentyOne
         , isHandBetterThan
         , isHandTiedWith
         , bestScore
+        , cardValue
         , deserializeCard
         , serializeType
         , serializeSuit
@@ -36,7 +38,7 @@ and calculate the best score for a given set of cards.
 @docs newHand, newCard, addCardToHand, addCardsToHand, suitOfCard, typeOfCard
 
 # Utility Functions
-@docs isSplittable, isBust, hasAce, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore
+@docs isSplittable, isBust, hasAce, isSoft, isBlackjack, isTwentyOne, isHandBetterThan, isHandTiedWith, bestScore. cardValue
 
 # Serialization
 @docs deserializeSuit, deserializeType, deserializeCard, serializeSuit, serializeType
@@ -182,6 +184,28 @@ hasAce (BjHand hand) =
     List.any (\(BjCard card) -> card.type_ == Ace) hand
 
 
+{-| Test if the hand is "soft". Indicates hand can
+receive an extra card without the threat of busting.
+
+    hand1 = newHand
+      |> addCardToHand (newCard Ace Diamonds)
+      |> addCardToHand (newCard Six Clubs)
+
+    isSoft hand1 == True
+-}
+isSoft : Hand -> Bool
+isSoft hand =
+    let
+        scores =
+            potentialScores hand
+
+        ace =
+            hasAce hand
+    in
+        ace
+            && List.any (\s -> s <= 11) scores
+
+
 {-| Test if a hand is a Blackjack.
 A hand is Blackjack if it is composed of
 one Ace and one face card or 10.
@@ -301,6 +325,52 @@ bestScore hand =
         Maybe.withDefault 0 (List.head goodScores)
 
 
+{-| Get the number value of the card.
+Returns `0` for aces.
+-}
+cardValue : Card -> Int
+cardValue (BjCard card) =
+    case card.type_ of
+        King ->
+            10
+
+        Queen ->
+            10
+
+        Jack ->
+            10
+
+        Ten ->
+            10
+
+        Nine ->
+            9
+
+        Eight ->
+            8
+
+        Seven ->
+            7
+
+        Six ->
+            6
+
+        Five ->
+            5
+
+        Four ->
+            4
+
+        Three ->
+            3
+
+        Two ->
+            2
+
+        _ ->
+            0
+
+
 
 -- Private Functions
 
@@ -347,49 +417,6 @@ isVirtualTen (BjCard card) =
 
         _ ->
             False
-
-
-cardValue : Card -> Int
-cardValue (BjCard card) =
-    case card.type_ of
-        King ->
-            10
-
-        Queen ->
-            10
-
-        Jack ->
-            10
-
-        Ten ->
-            10
-
-        Nine ->
-            9
-
-        Eight ->
-            8
-
-        Seven ->
-            7
-
-        Six ->
-            6
-
-        Five ->
-            5
-
-        Four ->
-            4
-
-        Three ->
-            3
-
-        Two ->
-            2
-
-        _ ->
-            0
 
 
 {-| Convert to Ints to a Card
@@ -463,6 +490,7 @@ deserializeType type_ =
 
         _ ->
             Ace
+
 
 {-| Convert CardSuit to an Int
 -}
